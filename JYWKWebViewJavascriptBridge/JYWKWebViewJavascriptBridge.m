@@ -21,7 +21,7 @@ static NSString *  iOS_Native_FlushMessageQueue = @"iOS_Native_FlushMessageQueue
 @end
 
 @implementation JYWKWebViewJavascriptBridge  {
-    WKWebView * _webView;
+    __weak WKWebView * _webView;
     JYWKWebViewJavascriptBridgeBase * _base;
     
 }
@@ -66,7 +66,7 @@ static NSString *  iOS_Native_FlushMessageQueue = @"iOS_Native_FlushMessageQueue
             NSLog(@"%@",error);
         }
         
-        [self->_base flushMessageQueue:result];
+        [_base flushMessageQueue:result];
     }];
 
 }
@@ -84,10 +84,9 @@ static NSString *  iOS_Native_FlushMessageQueue = @"iOS_Native_FlushMessageQueue
 
 
 - (void)addScriptMessageHandlers {
-    __weak typeof(self) weakSelf = self;
-    
-    [_webView.configuration.userContentController addScriptMessageHandler:weakSelf name:iOS_Native_InjectJavascript];
-    [_webView.configuration.userContentController addScriptMessageHandler:weakSelf name:iOS_Native_FlushMessageQueue];
+    LeakAvoider *avoider = [[LeakAvoider alloc] initWithDelegate:self];
+    [_webView.configuration.userContentController addScriptMessageHandler:avoider name:iOS_Native_InjectJavascript];
+    [_webView.configuration.userContentController addScriptMessageHandler:avoider name:iOS_Native_FlushMessageQueue];
 }
 - (void)removeScriptMessageHandlers {
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:iOS_Native_InjectJavascript];
