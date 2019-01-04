@@ -29,6 +29,9 @@ static int logMaxLength = 500;
 }
 
 - (void)dealloc {
+    [self.startupMessageQueue removeAllObjects];
+    [self.responseCallbacks removeAllObjects];
+    [self.messageHandlers removeAllObjects];
     self.startupMessageQueue = nil;
     self.responseCallbacks = nil;
     self.messageHandlers = nil;
@@ -193,8 +196,9 @@ static int logMaxLength = 500;
 //        [self _evaluateJavascript:javascriptCommand];
         
     } else {
+        __weak typeof(self) weakSelf = self;
         dispatch_sync(dispatch_get_main_queue(), ^{
-            [self.delegate evaluateJavascript:javascriptCommand];
+            [weakSelf.delegate evaluateJavascript:javascriptCommand];
 //            [self _evaluateJavascript:javascriptCommand];
         });
     }
